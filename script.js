@@ -1,65 +1,51 @@
 //your JS code here. If required.
-document.addEventListener("DOMContentLoaded", function() {
-    const app = document.getElementById("app");
-    const vidContainer = document.querySelector(".vid-container");
-    const video = document.querySelector(".vid-container video");
-    const playerContainer = document.querySelector(".player-container");
-    const soundPicker = document.querySelector(".sound-picker");
-    const timeSelectButtons = document.querySelectorAll(".time-select");
-    const timeDisplay = document.querySelector(".time-display");
-    const playButton = document.querySelector(".play");
-    const audio = document.getElementById("audio");
-    const rainAudio = document.getElementById("rain-audio");
+const video = document.getElementById('video');
+const audio = document.getElementById('audio');
+const timeDisplay = document.querySelector('.time-display');
 
-    let isPlaying = false;
-    let selectedTime = 10 * 60; // Initial time in seconds (10 minutes)
+let countdown;
+let isPlaying = false;
 
-    // Function to update the time display
-    function updateTimeDisplay() {
-        const minutes = Math.floor(selectedTime / 60);
-        const seconds = selectedTime % 60;
-        timeDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+function playPause() {
+    if (!isPlaying) {
+        audio.play();
+        isPlaying = true;
+        document.querySelector('.play').textContent = 'Pause';
+    } else {
+        audio.pause();
+        isPlaying = false;
+        document.querySelector('.play').textContent = 'Play';
     }
+}
 
-    // Event listener for time select buttons
-    timeSelectButtons.forEach(button => {
-        button.addEventListener("click", () => {
-            selectedTime = parseInt(button.id.split("-")[0]) * 60;
-            updateTimeDisplay();
-        });
-    });
+function changeSound(sound) {
+    audio.src = `sounds/${sound}.mp3`;
+    video.src = `videos/${sound}.mp4`;
+    playPause();
+}
 
-    // Event listener for the play/pause button
-    playButton.addEventListener("click", () => {
-        if (isPlaying) {
-            audio.pause();
-            rainAudio.pause();
-        } else {
-            audio.play();
-            rainAudio.play();
+function setTime(seconds) {
+    clearInterval(countdown);
+    let timer = seconds;
+    displayTimeLeft(seconds);
+
+    countdown = setInterval(() => {
+        timer--;
+        if (timer < 0) {
+            clearInterval(countdown);
+            isPlaying = false;
+            document.querySelector('.play').textContent = 'Play';
+            return;
         }
-        isPlaying = !isPlaying;
-        playButton.textContent = isPlaying ? "Pause" : "Play";
-    });
+        displayTimeLeft(timer);
+    }, 1000);
+}
 
-    // Function to toggle between video and audio
-    function toggleMedia(mediaType) {
-        if (mediaType === "video") {
-            vidContainer.style.display = "block";
-            playerContainer.style.display = "none";
-            video.play();
-            audio.pause();
-            rainAudio.pause();
-        } else {
-            vidContainer.style.display = "none";
-            playerContainer.style.display = "block";
-            video.pause();
-            audio.play();
-            rainAudio.play();
-        }
+function displayTimeLeft(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    let remainderSeconds = seconds % 60;
+    if (remainderSeconds < 10) {
+        remainderSeconds = '0' + remainderSeconds;
     }
-
-    // Initial state (video)
-    toggleMedia("video");
-    updateTimeDisplay();
-});
+    timeDisplay.textContent = `${minutes}:${remainderSeconds}`;
+}
